@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<!-- saved from url=(0069)file:///C:/Users/ivand/Downloads/Calculadora_Elo_Peru_03-08-2026.html -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de equivalencias de Elo · Perú</title>
+<meta property="og:title" content="Calculadora de equivalencias de Elo para jugadores en el Perú">
+<meta property="og:description" content="Convierte tu Elo FIDE clásico jugando en Perú a Elo FIDE internacional promedio, lichess y chess.com — y a la inversa. Estudio de Iván David Sáenz Ayllón.">
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="./Calculadora de equivalencias de Elo · Perú_files/css2" rel="stylesheet">
+<style>
+  :root{
+    --ink:#142A44; --ink-deep:#0C1B2E; --bronze:#B07D3A; --bronze-soft:#E8DCC7;
+    --paper:#FFFFFF; --page:#E7EBF0; --tint:#F7F9FB; --fide:#FBF7EF;
+    --rule:#D5DCE5; --text:#1B2836; --muted:#657486;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--page); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    padding:20px 12px 48px; -webkit-font-smoothing:antialiased;
+  }
+  .card{
+    max-width:880px; margin:0 auto; background:var(--paper);
+    border:1px solid var(--rule);
+    box-shadow:0 18px 50px rgba(20,42,68,.14), 0 2px 6px rgba(20,42,68,.06);
+    overflow:hidden;
+  }
+  .board{height:10px; background:var(--bronze);
+    background-image:repeating-linear-gradient(90deg,var(--ink) 0 22px,transparent 22px 44px);}
+
+  .head{padding:28px 22px 20px;}
+  .eyebrow{font-size:11.5px; letter-spacing:.26em; text-transform:uppercase;
+    color:var(--bronze); font-weight:700;}
+  .eyebrow span{color:var(--muted); font-weight:600;}
+  h1{font-family:'Lora',Georgia,serif; font-size:27px; line-height:1.24;
+    color:var(--ink); font-weight:700; margin:10px 0 8px; letter-spacing:-.005em;}
+  .sub{font-family:'Lora',Georgia,serif; font-size:15.5px; line-height:1.5; color:#4A5A6D;}
+  .meta{margin-top:16px; padding-top:12px; border-top:1px solid var(--rule);
+    display:flex; flex-wrap:wrap; gap:6px 24px; font-size:11.5px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--muted); font-weight:600;}
+  .meta b{color:var(--ink); font-weight:700;}
+
+  .steps{display:flex; flex-wrap:wrap; gap:8px 22px; padding:14px 22px;
+    background:var(--tint); border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    font-size:13px; color:#3D4C5E; font-weight:500;}
+  .steps b{display:inline-flex; align-items:center; justify-content:center;
+    width:19px; height:19px; border-radius:50%; background:var(--ink); color:#fff;
+    font-size:11px; font-weight:700; margin-right:8px; flex:none;}
+  .steps span{display:flex; align-items:center;}
+
+  .controls{padding:20px 22px 6px; display:grid; gap:14px;}
+  .field label{display:block; font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--muted); font-weight:700; margin-bottom:7px;}
+  select,input[type=number]{
+    width:100%; height:54px; border:1.5px solid #C4CEDA; border-radius:7px;
+    background:#fff; color:var(--ink); padding:0 14px; font-size:17px; font-weight:600;
+    font-family:inherit; outline:none;
+  }
+  input[type=number]{font-size:22px; font-weight:700; font-variant-numeric:tabular-nums;
+    letter-spacing:.01em;}
+  input::placeholder{color:#AEB9C6; font-weight:500; font-size:16px; letter-spacing:0;}
+  select:focus,input:focus{border-color:var(--ink); box-shadow:0 0 0 3px rgba(20,42,68,.13);}
+  select{appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23142A44' stroke-width='2'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 14px center; padding-right:38px;}
+  .hint{font-size:13px; color:var(--muted); margin-top:8px;}
+  .hint b{color:var(--ink); font-variant-numeric:tabular-nums;}
+
+  .warn{display:none; margin:2px 0 4px; padding:12px 14px; font-size:13.5px; line-height:1.5;
+    background:#FBF3E7; border:1px solid var(--bronze-soft); border-left:4px solid var(--bronze);
+    color:#6B4C1D; border-radius:0 6px 6px 0;}
+  .warn.show{display:block;}
+  .warn b{font-variant-numeric:tabular-nums;}
+
+  .res{padding:8px 22px 26px;}
+  .glabel{display:flex; align-items:center; gap:12px; margin:20px 0 10px;
+    font-size:11.5px; letter-spacing:.24em; text-transform:uppercase;
+    color:var(--bronze); font-weight:700;}
+  .glabel::after{content:''; flex:1; height:1px; background:var(--rule);}
+  .grid{display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(104px,1fr));}
+  .grid.hero{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));}
+
+  .tile{position:relative; border:1px solid #E1E7EE; background:var(--tint);
+    padding:15px 10px 13px; text-align:center; border-radius:2px;}
+  .tile .tl{font-size:10.5px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--muted); font-weight:700; line-height:1.35;}
+  .tile .tv{margin-top:7px; font-size:29px; line-height:1; font-weight:700;
+    color:var(--ink); font-variant-numeric:tabular-nums; letter-spacing:.01em;}
+  .tile .tv.empty{color:#B9C3CF; font-weight:600;}
+  .hero .tile{padding:19px 12px 17px;}
+  .hero .tv{font-size:38px;}
+  .tile.peru{background:var(--fide); border-color:var(--bronze-soft);}
+  .tile.intl{background:#F1F5FA; border-color:#CFDCEA;}
+  .tile .in{display:none; position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+    background:var(--bronze); color:#fff; font-size:9.5px; letter-spacing:.14em;
+    text-transform:uppercase; font-weight:700; padding:3px 10px; border-radius:999px;
+    white-space:nowrap;}
+  .tile.entered{border:1.5px solid var(--bronze);}
+  .tile.entered .in{display:block;}
+
+  .foot{padding:20px 22px 30px; border-top:1px solid var(--rule);
+    display:flex; flex-wrap:wrap; gap:18px 40px; justify-content:space-between;
+    align-items:flex-end;}
+  .note{font-size:12.5px; line-height:1.6; color:var(--muted); max-width:560px;}
+  .note b{color:var(--ink);}
+  .author{text-align:right; margin-left:auto;}
+  .author .lbl{font-size:10.5px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--bronze); font-weight:700;}
+  .author .name{font-family:'Lora',Georgia,serif; font-size:18px; color:var(--ink);
+    font-weight:600; margin-top:4px; white-space:nowrap;}
+
+  @media(min-width:640px){
+    body{padding:36px 20px 60px;}
+    .head{padding:38px 44px 24px;}
+    h1{font-size:33px;}
+    .steps{padding:15px 44px;}
+    .controls{padding:24px 44px 8px; grid-template-columns:1.35fr 1fr; align-items:start;}
+    .controls .warn,.controls .full{grid-column:1 / -1;}
+    .res{padding:8px 44px 30px;}
+    .foot{padding:22px 44px 34px;}
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="board"></div>
+
+  <div class="head">
+    <div class="eyebrow">Ajedrez &nbsp;·&nbsp; <span>Calculadora de equivalencias de Elo</span></div>
+    <h1>¿Cuánto vale tu Elo peruano en el resto del mundo?</h1>
+    <div class="sub">Convierte tu Elo entre el FIDE clásico jugando en el Perú, el FIDE clásico internacional
+      promedio (sin deflación ni inflación), lichess y chess.com — en ambas direcciones.</div>
+    <div class="meta">
+      <div>Actualizada al <b>3 de agosto de 2026</b></div>
+      <div><b>9</b> escalas</div>
+      <div>Dominio <b>1688 – 2123</b> (Elo en Perú)</div>
+    </div>
+  </div>
+
+  <div class="steps">
+    <span><b>1</b>Elige la escala de tu Elo</span>
+    <span><b>2</b>Escríbelo</span>
+    <span><b>3</b>Lee todas tus equivalencias al instante</span>
+  </div>
+
+  <div class="controls">
+    <div class="field">
+      <label for="scale">Escala del Elo que vas a ingresar</label>
+      <select id="scale">
+        <optgroup label="FIDE clásico">
+          <option value="peru" selected="">FIDE clásico · jugando en Perú</option>
+          <option value="intl">FIDE clásico · internacional promedio</option>
+        </optgroup>
+        <optgroup label="lichess">
+          <option value="lb">Blitz · lichess</option>
+          <option value="lr">Rápidas · lichess</option>
+          <option value="lu">Bala · lichess</option>
+          <option value="lc">Clásico · lichess</option>
+        </optgroup>
+        <optgroup label="chess.com">
+          <option value="cb">Blitz · chess.com</option>
+          <option value="cr">Rápidas · chess.com</option>
+          <option value="cu">Bala · chess.com</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="field">
+      <label for="elo">Tu Elo</label>
+      <input id="elo" type="number" inputmode="numeric" step="1" placeholder="Ej.: 1850" min="1688" max="2123">
+      <div class="hint" id="hint">Rango válido para esta escala: <b>1688 – 2123</b></div>
+    </div>
+    <div class="warn" id="warn"></div>
+  </div>
+
+  <section class="res" aria-live="polite">
+    <div class="glabel">FIDE clásico</div>
+    <div class="grid hero">
+      <div class="tile peru" data-k="peru"><span class="in">Ingresado</span>
+        <div class="tl">Jugando en Perú</div><div class="tv empty">—</div></div>
+      <div class="tile intl" data-k="intl"><span class="in">Ingresado</span>
+        <div class="tl">Internacional promedio</div><div class="tv empty">—</div></div>
+    </div>
+
+    <div class="glabel">lichess</div>
+    <div class="grid">
+      <div class="tile" data-k="lb"><span class="in">Ingresado</span>
+        <div class="tl">Blitz</div><div class="tv empty">—</div></div>
+      <div class="tile" data-k="lr"><span class="in">Ingresado</span>
+        <div class="tl">Rápidas</div><div class="tv empty">—</div></div>
+      <div class="tile" data-k="lu"><span class="in">Ingresado</span>
+        <div class="tl">Bala</div><div class="tv empty">—</div></div>
+      <div class="tile" data-k="lc"><span class="in">Ingresado</span>
+        <div class="tl">Clásico</div><div class="tv empty">—</div></div>
+    </div>
+
+    <div class="glabel">chess.com</div>
+    <div class="grid">
+      <div class="tile" data-k="cb"><span class="in">Ingresado</span>
+        <div class="tl">Blitz</div><div class="tv empty">—</div></div>
+      <div class="tile" data-k="cr"><span class="in">Ingresado</span>
+        <div class="tl">Rápidas</div><div class="tv empty">—</div></div>
+      <div class="tile" data-k="cu"><span class="in">Ingresado</span>
+        <div class="tl">Bala</div><div class="tv empty">—</div></div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <div class="note">
+      Modelo de <b>interpolación lineal por tramos</b> entre los cinco anclajes del estudio, idéntico al de
+      las fórmulas publicadas y aplicado en ambas direcciones. Las equivalencias son <b>aproximadas</b> y los
+      resultados se redondean al entero más próximo. Fuera del dominio de validez la calculadora no extrapola.
+    </div>
+    <div class="author">
+      <div class="lbl">Autor del estudio</div>
+      <div class="name">Iván David Sáenz Ayllón</div>
+    </div>
+  </div>
+</div>
+
+<noscript><p style="max-width:880px;margin:14px auto;font-size:14px;color:#6B4C1D;">
+  Activa JavaScript para usar la calculadora.</p></noscript>
+
+<script>
+(function(){
+  var S = {
+    peru:[1688,1738,1829,1922,2123],
+    intl:[1836,1896,1984,2062,2179],
+    lb:[2050,2160,2255,2351,2499],
+    lr:[2144,2225,2295,2362,2462],
+    lu:[2101,2235,2355,2479,2665],
+    lc:[2103,2174,2233,2286,2363],
+    cb:[1957,2123,2269,2416,2637],
+    cr:[1969,2068,2148,2222,2315],
+    cu:[1857,2029,2182,2337,2567]
+  };
+  var NAMES = {
+    peru:'Elo FIDE jugando en Perú', intl:'Elo FIDE internacional promedio',
+    lb:'Elo blitz de lichess', lr:'Elo de rápidas de lichess',
+    lu:'Elo bala de lichess', lc:'Elo clásico de lichess',
+    cb:'Elo blitz de chess.com', cr:'Elo de rápidas de chess.com',
+    cu:'Elo bala de chess.com'
+  };
+
+  function conv(src, tgt, v){
+    var A = S[src], B = S[tgt];
+    for (var i = 0; i < 4; i++){
+      if (v >= A[i] && v <= A[i+1]){
+        return B[i] + (v - A[i]) * (B[i+1] - B[i]) / (A[i+1] - A[i]);
+      }
+    }
+    return null;
+  }
+
+  var scale = document.getElementById('scale');
+  var elo   = document.getElementById('elo');
+  var hint  = document.getElementById('hint');
+  var warn  = document.getElementById('warn');
+  var tiles = document.querySelectorAll('.tile');
+
+  function setAll(dash){
+    tiles.forEach(function(t){
+      var tv = t.querySelector('.tv');
+      tv.textContent = '—'; tv.classList.add('empty');
+      t.classList.remove('entered');
+    });
+  }
+
+  function update(){
+    var s = scale.value, A = S[s];
+    hint.innerHTML = 'Rango válido para esta escala: <b>' + A[0] + ' – ' + A[4] + '</b>';
+    elo.min = A[0]; elo.max = A[4];
+    warn.classList.remove('show');
+
+    var raw = elo.value.trim();
+    if (!raw){ setAll(); return; }
+    var v = Number(raw);
+    if (!isFinite(v)){ setAll(); return; }
+
+    if (v < A[0] || v > A[4]){
+      setAll();
+      warn.innerHTML = 'El valor está fuera del dominio de validez del estudio. Para <b>' +
+        NAMES[s] + '</b> ingresa un Elo entre <b>' + A[0] + '</b> y <b>' + A[4] + '</b>.';
+      warn.classList.add('show');
+      return;
+    }
+
+    tiles.forEach(function(t){
+      var k = t.getAttribute('data-k');
+      var tv = t.querySelector('.tv');
+      tv.classList.remove('empty');
+      if (k === s){
+        tv.textContent = Math.round(v);
+        t.classList.add('entered');
+      } else {
+        tv.textContent = Math.round(conv(s, k, v));
+        t.classList.remove('entered');
+      }
+    });
+  }
+
+  scale.addEventListener('change', function(){ update(); elo.focus(); });
+  elo.addEventListener('input', update);
+  update();
+})();
+</script>
+
+
+</body></html>
