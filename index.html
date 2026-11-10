@@ -133,8 +133,8 @@
       promedio (sin deflación ni inflación), lichess y chess.com — en ambas direcciones.</div>
     <div class="meta">
       <div>Actualizada al <b>3 de agosto de 2026</b></div>
-      <div><b>9</b> escalas</div>
-      <div>Dominio <b>1688 – 2123</b> (Elo en Perú)</div>
+      <div><b>8</b> escalas</div>
+      <div>Dominio <b>1400 – 2118</b> (Elo en Perú)</div>
     </div>
   </div>
 
@@ -156,7 +156,6 @@
           <option value="lb">Blitz · lichess</option>
           <option value="lr">Rápidas · lichess</option>
           <option value="lu">Bala · lichess</option>
-          <option value="lc">Clásico · lichess</option>
         </optgroup>
         <optgroup label="chess.com">
           <option value="cb">Blitz · chess.com</option>
@@ -167,8 +166,8 @@
     </div>
     <div class="field">
       <label for="elo">Tu Elo</label>
-      <input id="elo" type="number" inputmode="numeric" step="1" placeholder="Ej.: 1850" min="1688" max="2123">
-      <div class="hint" id="hint">Rango válido para esta escala: <b>1688 – 2123</b></div>
+      <input id="elo" type="number" inputmode="numeric" step="1" placeholder="Ej.: 1850" min="1400" max="2118">
+      <div class="hint" id="hint">Rango válido para esta escala: <b>1400 – 2118</b></div>
     </div>
     <div class="warn" id="warn"></div>
   </div>
@@ -190,8 +189,6 @@
         <div class="tl">Rápidas</div><div class="tv empty">—</div></div>
       <div class="tile" data-k="lu"><span class="in">Ingresado</span>
         <div class="tl">Bala</div><div class="tv empty">—</div></div>
-      <div class="tile" data-k="lc"><span class="in">Ingresado</span>
-        <div class="tl">Clásico</div><div class="tv empty">—</div></div>
     </div>
 
     <div class="glabel">chess.com</div>
@@ -207,7 +204,7 @@
 
   <div class="foot">
     <div class="note">
-      Modelo de <b>interpolación lineal por tramos</b> entre los cinco anclajes del estudio, idéntico al de
+      Modelo de <b>interpolación lineal por tramos</b> entre los anclajes del estudio, idéntico al de
       las fórmulas publicadas y aplicado en ambas direcciones. Las equivalencias son <b>aproximadas</b> y los
       resultados se redondean al entero más próximo. Fuera del dominio de validez la calculadora no extrapola.
     </div>
@@ -223,28 +220,38 @@
 
 <script>
 (function(){
+  // Anclajes del estudio actualizado al 3 de agosto de 2026, de menor a mayor.
+  // El primer anclaje (1400 en Perú = 1556 internacional) solo existe para las dos escalas FIDE:
+  // corresponde al tramo E_int = E_Perú + 156 de las fórmulas publicadas.
   var S = {
-    peru:[1688,1738,1829,1922,2123],
-    intl:[1836,1896,1984,2062,2179],
-    lb:[2050,2160,2255,2351,2499],
-    lr:[2144,2225,2295,2362,2462],
-    lu:[2101,2235,2355,2479,2665],
-    lc:[2103,2174,2233,2286,2363],
-    cb:[1957,2123,2269,2416,2637],
-    cr:[1969,2068,2148,2222,2315],
-    cu:[1857,2029,2182,2337,2567]
+    peru:[1400,1706,1846,1928,2001,2118],
+    intl:[1556,1862,2004,2068,2125,2217],
+    lb:[null,2097,2259,2306,2411,2504],
+    lr:[null,2178,2298,2332,2401,2465],
+    lu:[null,2156,2360,2421,2552,2670],
+    cb:[null,2026,2275,2348,2502,2644],
+    cr:[null,2004,2140,2209,2300,2369],
+    cu:[null,1927,2189,2265,2427,2574]
   };
+  var N = S.peru.length;
   var NAMES = {
     peru:'Elo FIDE jugando en Perú', intl:'Elo FIDE internacional promedio',
     lb:'Elo blitz de lichess', lr:'Elo de rápidas de lichess',
-    lu:'Elo bala de lichess', lc:'Elo clásico de lichess',
+    lu:'Elo bala de lichess',
     cb:'Elo blitz de chess.com', cr:'Elo de rápidas de chess.com',
     cu:'Elo bala de chess.com'
   };
 
+  function lo(k){
+    var A = S[k];
+    for (var i = 0; i < N; i++){ if (A[i] !== null) return A[i]; }
+  }
+  function hi(k){ return S[k][N-1]; }
+
   function conv(src, tgt, v){
     var A = S[src], B = S[tgt];
-    for (var i = 0; i < 4; i++){
+    for (var i = 0; i < N - 1; i++){
+      if (A[i] === null || B[i] === null) continue;
       if (v >= A[i] && v <= A[i+1]){
         return B[i] + (v - A[i]) * (B[i+1] - B[i]) / (A[i+1] - A[i]);
       }
@@ -267,9 +274,9 @@
   }
 
   function update(){
-    var s = scale.value, A = S[s];
-    hint.innerHTML = 'Rango válido para esta escala: <b>' + A[0] + ' – ' + A[4] + '</b>';
-    elo.min = A[0]; elo.max = A[4];
+    var s = scale.value, min = lo(s), max = hi(s);
+    hint.innerHTML = 'Rango válido para esta escala: <b>' + min + ' – ' + max + '</b>';
+    elo.min = min; elo.max = max;
     warn.classList.remove('show');
 
     var raw = elo.value.trim();
@@ -277,26 +284,42 @@
     var v = Number(raw);
     if (!isFinite(v)){ setAll(); return; }
 
-    if (v < A[0] || v > A[4]){
+    if (v < min || v > max){
       setAll();
       warn.innerHTML = 'El valor está fuera del dominio de validez del estudio. Para <b>' +
-        NAMES[s] + '</b> ingresa un Elo entre <b>' + A[0] + '</b> y <b>' + A[4] + '</b>.';
+        NAMES[s] + '</b> ingresa un Elo entre <b>' + min + '</b> y <b>' + max + '</b>.';
       warn.classList.add('show');
       return;
     }
 
+    var partial = false;
     tiles.forEach(function(t){
       var k = t.getAttribute('data-k');
       var tv = t.querySelector('.tv');
-      tv.classList.remove('empty');
       if (k === s){
         tv.textContent = Math.round(v);
+        tv.classList.remove('empty');
         t.classList.add('entered');
+        return;
+      }
+      t.classList.remove('entered');
+      var r = conv(s, k, v);
+      if (r === null){
+        tv.textContent = '—'; tv.classList.add('empty');
+        partial = true;
       } else {
-        tv.textContent = Math.round(conv(s, k, v));
-        t.classList.remove('entered');
+        tv.textContent = Math.round(r);
+        tv.classList.remove('empty');
       }
     });
+
+    if (partial){
+      warn.innerHTML = 'Entre <b>' + S.peru[0] + '</b> y <b>' + S.peru[1] + '</b> de Elo FIDE jugando en Perú (<b>' +
+        S.intl[0] + ' – ' + S.intl[1] + '</b> de Elo FIDE internacional promedio) el estudio solo da la ' +
+        'equivalencia entre las dos escalas FIDE. Las equivalencias con lichess y chess.com empiezan en <b>' +
+        S.peru[1] + '</b> de Elo en Perú.';
+      warn.classList.add('show');
+    }
   }
 
   scale.addEventListener('change', function(){ update(); elo.focus(); });
